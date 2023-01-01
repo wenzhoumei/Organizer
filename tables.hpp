@@ -10,6 +10,17 @@ struct Action {
 	std::cout << "action: " << action << std::endl;
 	std::cout << "data: " << data << std::endl;
     }
+
+    void run() const {
+	/*
+	 * If action.extension in extensions
+	 * 	execute
+	 * Else if file called action.extension.ext
+	 * 	that file
+	 * Else
+	 *  	xdg-open it
+	 */
+    }
 };
 
 enum { DB_BIND_ERROR, DB_EXECUTE_ERROR, DB_OK, DB_NO_ROWS, DB_RESET_ERROR };
