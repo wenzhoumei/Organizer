@@ -2,30 +2,30 @@
 TARGET = exec
 
 # Specify the C++ compiler
-CC = g++
+CXX = g++
 
 # Specify the C++ compiler flags
 CFLAGS = -Wall -Wextra -std=c++20
 
 # Specify the C++ linker flags
-LDFLAGS = sqlite3
+LDFLAGS = -lglfw
 
 # Specify the source files
-SRC = main.cpp
+SRCS = $(wildcard *.cpp)
 
 # Specify the object files (automatically generated from the source files)
-OBJ = $(SRC:.cpp=.o)
+OBJ = $(SRCS:.cpp=.o)
 
 # Default target
 all: $(TARGET)
 
 # Build the target executable
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -l $(LDFLAGS) -o $(TARGET)
+	$(CXX) $(CFLAGS) $(OBJ) $(LDFLAGS) -o $(TARGET)
 
 # Compile the source files into object files
 %.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
+	$(CXX) $(CFLAGS) -c $<
 
 # Cleanup
 clean:

@@ -1,7 +1,98 @@
 #include <sqlite3.h>
 #include <string>
 #include <iostream>
+#include "util.h"
 
+class Action: public std::string
+{
+public:
+    // Returns the extension of the string (the portion after the last dot)
+    // If there is no dot, returns an empty string
+    std::string Extension() const
+    {
+        size_t dotPos = this->find_last_of('.');
+        if (dotPos == std::string::npos)
+            return "";
+        else
+            return this->substr(dotPos + 1);
+    }
+
+    // Returns the name of the string (the portion before the last dot)
+    // If there is no dot, returns the whole string
+    std::string Name() const
+    {
+        size_t dotPos = this->find_last_of('.');
+        if (dotPos == std::string::npos)
+            return *this;
+        else
+            return this->substr(0, dotPos);
+    }
+
+    void run() const {
+	 /* If action.extension in extensions
+	 * 	execute
+	 * Else if file called action.extension.ext
+	 * 	that file
+	 * Else
+	 *  	xdg-open it
+	 */
+    }
+};
+
+#include <vector>
+class Table {
+private:
+    std::string database_filename_;
+    std::string table_name_;
+    std::string primary_key_;
+    sqlite3* db_;
+
+    void openDatabase_() {
+	    // Open the database
+	    int result = sqlite3_open(database_filename_.c_str(), &db_);
+	    if (result != SQLITE_OK) {
+		// Handle the error
+		const char* err = sqlite3_errmsg(db_);
+		sqlite3_close(db_);
+		die("Error opening database: %s", err);
+	    }
+    }
+
+    void prepareStatement_(const char* sql_str, sqlite3_stmt*& stmt) {
+	    int result = sqlite3_prepare_v2(db_, sql_str, -1, &stmt, 0);
+	    if (result != SQLITE_OK) {
+		// Handle the error
+		const char* err = sqlite3_errmsg(db_);
+		sqlite3_finalize(stmt);
+		sqlite3_close(db_);
+		die("Error preparing statement: %s", err);
+	    }
+    }
+
+    void bindStatement_(const char* sql_str, sqlite3_stmt*& stmt) {
+	    int result = sqlite3_bind_text(stmt, 1, sql_str, -1, SQLITE_TRANSIENT);
+	    if (result != SQLITE_OK) {
+		// Handle the error
+		const char* err = sqlite3_errmsg(db_);
+		sqlite3_finalize(stmt);
+		sqlite3_close(db_);
+		die("Error binding statement: %s", err);
+	    }
+    }
+
+    int executeStatement_(sqlite3_stmt* stmt) {
+	int result = sqlite3_step(stmt);
+	if (result != SQLITE_DONE && result != SQLITE_ROW) {
+	    // Handle the error
+	    fprintf(stderr, "Error executing statement: %s\n", sqlite3_errmsg(db_));
+	}
+	sqlite3_reset(stmt);
+
+	return result;
+    }
+};
+
+/*
 struct Action {
     std::string action;
     std::string data;
@@ -12,16 +103,15 @@ struct Action {
     }
 
     void run() const {
-	/*
 	 * If action.extension in extensions
 	 * 	execute
 	 * Else if file called action.extension.ext
 	 * 	that file
 	 * Else
 	 *  	xdg-open it
-	 */
     }
 };
+*/
 
 enum { DB_BIND_ERROR, DB_EXECUTE_ERROR, DB_OK, DB_NO_ROWS, DB_RESET_ERROR };
 
