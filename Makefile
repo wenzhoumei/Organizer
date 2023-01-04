@@ -1,5 +1,5 @@
 # Specify the target executable
-TARGET = exec
+TARGET = files/program.program
 
 # Specify the C++ compiler
 CXX = g++

@@ -96,19 +96,11 @@ void printVector(const std::vector<T>& vec)
     }
     std::cout << std::endl;
 }
-/*
-// findMatches
-int main() {
-    std::vector<std::string> search = readLinesFromFile("file.txt");
-    std::vector<std::string> found;
-    findMatches("o w c", search, found);
-    printVector(search);
-    printVector(found);
 
-
-    return 0;
-}
-*/
+std::string default_default_extension = "default";
+std::string default_extension_extension = "ext";
+std::string default_script_name = "script";
+enum { SCRIPT_OK = 0, SCRIPT_EXIT = 87 };
 
 class Action: public std::string
 {
@@ -155,46 +147,64 @@ public:
     }
 
     Action GetScriptName() const {
-	    return this->Extension() + ".ext";
+	    return this->Extension() + "." + default_extension_extension;
     }
 
     void Run() const {
 	Action script_name = this->GetScriptName();
 
+	std::string command;
+
+
 	// if script doesn't exist exit the function
 	if (script_name.GetContents() == "") {
-	    return;
+	    command = "./" + default_script_name + "." + default_default_extension + " \"" + *this + "\"";
+	} else {
+	    std::string file_str = this->GetContents();
+
+	    // if file doesn't exist set arg to action name else set it to file_str
+	    std::string arg = file_str == "" ? this->Name(): file_str;
+
+	    command = "./" + script_name + " " + arg;
 	}
 
-	std::string file_str = this->GetContents();
+	std::cout << command << std::endl;
 
-	// if file doesn't exist set arg to action name else set it to file_str
-	std::string arg = file_str == "" ? this->Name(): file_str;
-
-	std::string command = script_name + " " + arg;
+	// run command and store exit status code
 	int result = WEXITSTATUS(std::system(command.c_str()));
-	if (result != 0) {
+	if (result == SCRIPT_EXIT) {
+	    exit(0);
+	} else if (result != SCRIPT_OK) {
 	    std::cerr << "Error: script returned non-zero exit code: " << result << std::endl;
 	}
     }
 };
 
+/*
+// findMatches
+int main() {
+    std::vector<std::string> search = readLinesFromFile("file.txt");
+    std::vector<std::string> found;
+    findMatches("o w c", search, found);
+    printVector(search);
+    printVector(found);
 
-#include "cpptk.h"
-#include <stdio.h>
 
-using namespace Tk;
-
-void hello() {
-     puts("Hello C++/Tk!");
+    return 0;
 }
+*/
 
-int main(int, char *argv[])
-{
-     init(argv[0]);
+#include <filesystem>
 
-     button(".b") -text("Say Hello") -command(hello);
-     pack(".b") -padx(20) -pady(6);
-          
-     runEventLoop();
+int main() {
+    // Set working directory
+    std::filesystem::current_path("/home/wenzhou/Organizer/files");
+
+    while (true) {
+	std::cout << "> ";
+	Action input;
+	getline(std::cin, input);
+
+	input.Run();
+    }
 }
