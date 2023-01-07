@@ -5,10 +5,10 @@ TARGET = files/program.program
 CXX = g++
 
 # Specify the C++ compiler flags
-CFLAGS = -Wall -Wextra -std=c++20
+CFLAGS = -g -Wall -Wextra -std=c++20
 
 # Specify the C++ linker flags
-LDFLAGS = -lglfw
+LDFLAGS =
 
 # Specify the source files
 SRCS = $(wildcard *.cpp)

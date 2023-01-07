@@ -7,12 +7,18 @@
 #include <functional>
 class Space;
 
+enum Extension { EXTENSION_SCRIPT, SPACE, ADD_TO_SPACE, EDIT, REMOVE_FROM_SPACE, DELETE_FILE };
+enum ExitCode { OK = 0 };
+
 class Action: public std::string
 {
     friend class Program;
     // app: function
 
+    static std::unordered_map<enum Extension, Action> program_actions;
     static std::unordered_map<std::string, std::function<void(Action)>> extension_functions;
+    static void ExecuteFileExtension_(Action script_name, Action a);
+    static void ExecuteActionExtension_(Action script_name, Action a);
 public:
     using std::string::string;
     Action() : std::string() {}  // define a constructor that takes a std::string argument

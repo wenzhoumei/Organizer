@@ -4,10 +4,10 @@
 #include <iostream>
 
 #include "action.hpp"
-#include "config.hpp"
 #include "space.hpp"
 
 std::unordered_map<std::string, std::function<void(Action)>> Action::extension_functions;
+std::unordered_map<enum Extension, Action> Action::program_actions;
 
 std::string Action::Extension(char delimiter) const
 {
@@ -54,7 +54,7 @@ std::string Action::GetScriptParameter() const {
  * Returns a vector of strings on success, an empty vector on error.
  */
 Space Action::LoadSpace() const {
-    std::ifstream file(*this + config::default_action_extensions[config::Extension::SPACE]);
+    std::ifstream file(*this + ".space");
     Space lines;
 
     if (file.good()) {
@@ -67,11 +67,11 @@ Space Action::LoadSpace() const {
 }
 
 Action Action::GetSpaceName() const {
-    return *this + "." + config::default_action_extensions[config::SPACE];
+    return *this + "." + program_actions[Extension::SPACE];
 }
 
 Action Action::GetScriptName() const {
-    return this->Extension('.') + "." + config::default_action_extensions[config::EXTENSION_SCRIPT];
+    return this->Extension('.') + "." + program_actions[Extension::EXTENSION_SCRIPT];
 }
 
 void Action::Run() const {
@@ -82,7 +82,7 @@ void Action::Run() const {
     if (!script_name.IsFile()) {
 	// if script doesn't exist run default function .ext
 	param = *this;
-	script_name = "." + config::default_action_extensions[config::EXTENSION_SCRIPT];
+	script_name = "." + program_actions[Extension::EXTENSION_SCRIPT];
     } else {
 	param = this->GetScriptParameter();
     }
@@ -92,7 +92,7 @@ void Action::Run() const {
 
     // run command and store exit status code
     int result = WEXITSTATUS(std::system(command.c_str()));
-    if (result != config::ExitCode::OK) {
+    if (result != ExitCode::OK) {
 	std::cout << "Error: script returned non-zero exit code: " << result << std::endl;
     }
 }
@@ -100,8 +100,33 @@ void Action::Run() const {
 void Action::Run2() const {
     std::string extension = this->Extension('.');
     if (!extension_functions.contains(extension)) {
-	extension = "";
+	// If extension corresponds to a newly created file
+	Action script_filename = extension + "." + program_actions[Extension::EXTENSION_SCRIPT];
+	if (script_filename.IsFile()) {
+	    std::function<void(Action)> script_func = std::bind(ExecuteActionExtension_, script_filename, std::placeholders::_1);
+	    extension_functions[script_filename.Name('.')] = script_func;
+	} else {
+	    extension = "";
+	}
     }
 
     extension_functions[extension](*this);
+}
+
+void Action::ExecuteFileExtension_(Action script_name, Action a) {
+    std::string command = "./" + script_name + " " + "\"" + a + "\"";
+
+    int result = WEXITSTATUS(std::system(command.c_str()));
+    if (result != ExitCode::OK) {
+	std::cout << "Error: script returned non-zero exit code: " << result << std::endl;
+    }
+}
+
+void Action::ExecuteActionExtension_(Action script_name, Action a) {
+    std::string command = "./" + script_name + " " + "\"" + a.GetScriptParameter() + "\"";
+
+    int result = WEXITSTATUS(std::system(command.c_str()));
+    if (result != ExitCode::OK) {
+	std::cout << "Error: script returned non-zero exit code: " << result << std::endl;
+    }
 }
