@@ -11,15 +11,7 @@ void die(const char *fmt, ...)
     vfprintf(stderr, fmt, ap);
     va_end(ap);
 
-    if (fmt[0] && fmt[strlen(fmt) - 1] == ':')
-    {
-        fputc(' ', stderr);
-        perror(NULL);
-    }
-    else
-    {
-        fputc('\n', stderr);
-    }
+    fputc('\n', stderr);
 
     exit(1);
 }

@@ -7,6 +7,8 @@
 #include "config.hpp"
 #include "space.hpp"
 
+std::unordered_map<std::string, std::function<void(Action)>> Action::extension_functions;
+
 std::string Action::Extension(char delimiter) const
 {
     size_t delimiterPos = this->find_last_of(delimiter);
@@ -51,9 +53,8 @@ std::string Action::GetScriptParameter() const {
  *
  * Returns a vector of strings on success, an empty vector on error.
  */
-Space Action::LoadSpace()
-{
-    std::ifstream file(*this + config::extensions[config::Extension::SPACE]);
+Space Action::LoadSpace() const {
+    std::ifstream file(*this + config::default_action_extensions[config::Extension::SPACE]);
     Space lines;
 
     if (file.good()) {
@@ -65,8 +66,12 @@ Space Action::LoadSpace()
     return lines;
 }
 
+Action Action::GetSpaceName() const {
+    return *this + "." + config::default_action_extensions[config::SPACE];
+}
+
 Action Action::GetScriptName() const {
-    return this->Extension('.') + "." + config::extensions[config::EXTENSION_SCRIPT];
+    return this->Extension('.') + "." + config::default_action_extensions[config::EXTENSION_SCRIPT];
 }
 
 void Action::Run() const {
@@ -77,7 +82,7 @@ void Action::Run() const {
     if (!script_name.IsFile()) {
 	// if script doesn't exist run default function .ext
 	param = *this;
-	script_name = "." + config::extensions[config::EXTENSION_SCRIPT];
+	script_name = "." + config::default_action_extensions[config::EXTENSION_SCRIPT];
     } else {
 	param = this->GetScriptParameter();
     }
@@ -88,6 +93,15 @@ void Action::Run() const {
     // run command and store exit status code
     int result = WEXITSTATUS(std::system(command.c_str()));
     if (result != config::ExitCode::OK) {
-	std::cerr << "Error: script returned non-zero exit code: " << result << std::endl;
+	std::cout << "Error: script returned non-zero exit code: " << result << std::endl;
     }
+}
+
+void Action::Run2() const {
+    std::string extension = this->Extension('.');
+    if (!extension_functions.contains(extension)) {
+	extension = "";
+    }
+
+    extension_functions[extension](*this);
 }

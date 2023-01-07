@@ -2,19 +2,10 @@
 #include <unordered_map>
 
 #include "config.hpp"
+#include "action.hpp"
+
 
 namespace config {
-
-    std::unordered_map<Extension, std::string> extensions;
-    std::string working_directory;
-
-    void SetDefaults() {
-	extensions[Extension::EXTENSION_SCRIPT] = "ext";
-	extensions[Extension::SPACE] = "space";
-
-	working_directory = "/home/wenzhou/Organizer/files";
-    }
-
-    void LoadUserDefaults() {
-    }
+    std::unordered_map<Extension, std::string> default_action_extensions;
+    std::unordered_map<Action, Action> file_to_action_extension;
 };

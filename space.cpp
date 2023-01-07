@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
+#include <algorithm>
 
 void Space::findMatches(const Action& inputText, Space& outputArray) const
 {
@@ -69,3 +70,9 @@ void Space::Print() const
     }
     std::cout << std::endl;
 }
+
+bool Space::ContainsAction(Action a) const
+{
+    return std::find(this->begin(), this->end(), a) != this->end();
+}
+

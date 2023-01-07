@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "action.hpp"
+#include "program.hpp"
 
 /*
 // findMatches
@@ -25,24 +25,11 @@ int main() {
 */
 
 #include <filesystem>
-#include "config.hpp"
 
 int main() {
-    config::SetDefaults();
     // Set working directory
-    std::filesystem::current_path(config::working_directory);
-
-    while (true) {
-	std::cout << "> ";
-	Action input;
-
-
-	getline(std::cin, input);
-
-	if (input == Action("q")) {
-	    break;
-	}
-
-	input.Run();
-    }
+    Program program("/home/wenzhou/Organizer/files");
+    program.SetDefaults();
+    program.LoadDefaultScripts();
+    program.MainLoop();
 }

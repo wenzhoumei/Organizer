@@ -12,6 +12,8 @@ public:
     void findMatches(const Action& inputText, Space& outputArray) const;
     void RunAll() const;
     void Print() const;
+
+    bool ContainsAction(Action a) const;
     //combine spaces
 };
 

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "action.hpp"
 
+
 namespace config {
     enum ExitCode { OK = 0 };
 
@@ -12,8 +13,8 @@ namespace config {
 
     void SetDefaults();
 
-    extern std::unordered_map<Extension, std::string> extensions;
-    extern std::string working_directory;
+    extern std::unordered_map<Extension, std::string> default_action_extensions;
+    extern std::unordered_map<Action, Action> file_to_action_extension;
 
     extern std::unordered_map<Action, std::string> scripts;
     void LoadUserDefaults();
