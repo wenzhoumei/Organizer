@@ -6,6 +6,10 @@
 #include <string>
 
 class Space: public std::vector<Action> {
+private:
+    friend class Action;
+    static Space global_space;
+    static Space current_space;
 public:
     using std::vector<Action>::vector;
 

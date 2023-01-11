@@ -4,6 +4,9 @@
 #include <sstream>
 #include <algorithm>
 
+Space Space::global_space;
+Space Space::current_space;
+
 void Space::findMatches(const Action& inputText, Space& outputArray) const
 {
     // Split the input text into tokens

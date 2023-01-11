@@ -6,6 +6,8 @@
 #include "action.hpp"
 #include "space.hpp"
 
+Action Action::current_action;
+
 std::unordered_map<std::string, std::function<void(Action)>> Action::extension_functions;
 std::unordered_map<enum Extension, Action> Action::program_actions;
 
@@ -97,6 +99,11 @@ void Action::Run() const {
     }
 }
 
+void Action::MakeCurrent() const {
+    current_action = *this;
+    Space::current_space = this->LoadSpace();
+}
+
 void Action::Run2() const {
     std::string extension = this->Extension('.');
     if (!extension_functions.contains(extension)) {
@@ -111,10 +118,12 @@ void Action::Run2() const {
     }
 
     extension_functions[extension](*this);
+    MakeCurrent();
 }
 
 void Action::ExecuteFileExtension_(Action script_name, Action a) {
     std::string command = "./" + script_name + " " + "\"" + a + "\"";
+    std::cout << command << std::endl;
 
     int result = WEXITSTATUS(std::system(command.c_str()));
     if (result != ExitCode::OK) {
@@ -124,9 +133,32 @@ void Action::ExecuteFileExtension_(Action script_name, Action a) {
 
 void Action::ExecuteActionExtension_(Action script_name, Action a) {
     std::string command = "./" + script_name + " " + "\"" + a.GetScriptParameter() + "\"";
+    std::cout << command << std::endl;
 
     int result = WEXITSTATUS(std::system(command.c_str()));
     if (result != ExitCode::OK) {
 	std::cout << "Error: script returned non-zero exit code: " << result << std::endl;
     }
+}
+
+void Action::AddToCurrentSpace_(Action a) {
+    Action action = a.Name('.');
+    if (Space::current_space.ContainsAction(action)) {
+	std::cerr << "Action exists in current space: " << a << std::endl;
+	return;
+    }
+
+    if (current_action.Extension('.') == program_actions[Extension::EXTENSION_SCRIPT]) {
+	    std::function<void(Action)> script_func = std::bind(ExecuteFileExtension_, current_action, std::placeholders::_1);
+	    extension_functions[action] = script_func;
+    }
+
+    Space::current_space.push_back(a);
+
+    std::ofstream outfile;
+    outfile.open(current_action.GetSpaceName(), std::ios_base::app);
+    outfile << action << std::endl;
+    outfile.close();
+
+    return;
 }

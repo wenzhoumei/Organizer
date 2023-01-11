@@ -3,7 +3,6 @@
 #include "space.hpp"
 #include "program.hpp"
 #include "action.hpp"
-#include "navigation.hpp"
 #include <unordered_map>
 #include <iostream>
 #include <functional>
@@ -15,7 +14,7 @@ Program::Program(std::string working_directory) {
 
 
 void Program::LoadDefaultScripts() {
-    Action::extension_functions[Action::program_actions[Extension::ADD_TO_SPACE]] = AddToCurrentSpace_;
+    Action::extension_functions[Action::program_actions[Extension::ADD_TO_SPACE]] = Action::AddToCurrentSpace_;
 
     for (const auto& entry : std::filesystem::directory_iterator(".")) {
 	Action action = Action(entry.path().filename());
@@ -45,7 +44,7 @@ void Program::LoadDefaultScripts() {
 
 void Program::MainLoop() {
     while (true) {
-	std::cout << "> ";
+	std::cout << Action::current_action << " > ";
 	Action input;
 
 	getline(std::cin, input);
@@ -59,6 +58,9 @@ void Program::MainLoop() {
 }
 
 void Program::SetDefaults() {
+    Action default_startup_action = "program.program";
+    default_startup_action.MakeCurrent();
+
     Action::program_actions[Extension::EXTENSION_SCRIPT] = "ext";
     Action::program_actions[Extension::SPACE] = "space";
     Action::program_actions[Extension::ADD_TO_SPACE] = "add";
@@ -69,20 +71,4 @@ void Program::SetDefaults() {
 
 
 void Program::LoadUserDefaults() {
-}
-
-void Program::AddToCurrentSpace_(Action a) {
-    if (navigation::current_space.ContainsAction(a)) {
-	std::cerr << "Action exists in current space: " << a << std::endl;
-	return;
-    }
-
-    navigation::current_space.push_back(a);
-
-    std::ofstream outfile;
-    outfile.open(navigation::current_action.GetSpaceName(), std::ios_base::app);
-    outfile << a << std::endl;
-    outfile.close();
-
-    return;
 }

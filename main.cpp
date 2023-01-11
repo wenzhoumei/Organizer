@@ -10,6 +10,8 @@
 #include <vector>
 #include "program.hpp"
 
+#include "gui.hpp"
+
 /*
 // findMatches
 int main() {
@@ -25,7 +27,25 @@ int main() {
 */
 
 #include <filesystem>
+#include <QApplication>
 
+
+int main(int argc, char* argv[])
+{
+    QApplication app(argc, argv);
+    
+    MenuWindow window(8, 33, 300);
+
+    /*
+    for (int i = 0; i < 7; ++i) {
+	window->NewColumn(generateRandomColor());
+    }
+    */
+
+    return app.exec();
+}
+
+/*
 int main() {
     // Set working directory
     Program program("/home/wenzhou/Organizer/files");
@@ -33,3 +53,4 @@ int main() {
     program.LoadDefaultScripts();
     program.MainLoop();
 }
+*/
