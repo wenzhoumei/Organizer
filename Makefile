@@ -53,17 +53,9 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
-		gui.cpp \
-		action.cpp \
-		program.cpp \
-		space.cpp \
-		util.cpp 
+		action_string_processor.cpp 
 OBJECTS       = main.o \
-		gui.o \
-		action.o \
-		program.o \
-		space.o \
-		util.o
+		action_string_processor.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
 		/usr/lib/qt/mkspecs/common/linux.conf \
@@ -281,11 +273,7 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/features/yacc.prf \
 		/usr/lib/qt/mkspecs/features/lex.prf \
 		myproject.pro  main.cpp \
-		gui.cpp \
-		action.cpp \
-		program.cpp \
-		space.cpp \
-		util.cpp
+		action_string_processor.cpp
 QMAKE_TARGET  = myproject
 DESTDIR       = 
 TARGET        = myproject
@@ -747,7 +735,7 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp gui.cpp action.cpp program.cpp space.cpp util.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp action_string_processor.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -797,29 +785,11 @@ compiler_clean: compiler_moc_predefs_clean
 
 ####### Compile
 
-main.o: main.cpp program.hpp \
-		action.hpp \
-		gui.hpp
+main.o: main.cpp action_string_processor.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
-gui.o: gui.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o gui.o gui.cpp
-
-action.o: action.cpp action.hpp \
-		space.hpp
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o action.o action.cpp
-
-program.o: program.cpp space.hpp \
-		action.hpp \
-		program.hpp
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o program.o program.cpp
-
-space.o: space.cpp space.hpp \
-		action.hpp
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o space.o space.cpp
-
-util.o: util.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o util.o util.cpp
+action_string_processor.o: action_string_processor.cpp action_string_processor.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o action_string_processor.o action_string_processor.cpp
 
 ####### Install
 
