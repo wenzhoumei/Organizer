@@ -14,7 +14,7 @@ std::string ActionStringProcessor::GetPureName(const std::string& action_string)
 {
     size_t delimiterPos = action_string.find_last_of('.');
     if (delimiterPos == std::string::npos) {
-	return program_extensions_[Extension::DEFAULT];
+	return action_string;
     } else {
 	return action_string.substr(0, delimiterPos);
     }
@@ -22,13 +22,8 @@ std::string ActionStringProcessor::GetPureName(const std::string& action_string)
 
 std::string ActionStringProcessor::GetExtension(const std::string& action_string) const
 {
-    size_t delimiterPos = action_string.find_last_of('.');
-    if (delimiterPos == std::string::npos) {
-	return program_extensions_[Extension::DEFAULT];
-    } else {
-	std::string extension = action_string.substr(delimiterPos + 1);
-	return extension_preloads_.contains(extension) ? extension: program_extensions_[Extension::DEFAULT];
-    }
+    std::string pure_extension = GetPureExtension(action_string);
+    return extension_preloads_.contains(pure_extension) ? pure_extension: program_extensions_[Extension::DEFAULT];
 }
 
 std::string ActionStringProcessor::GetName(const std::string& action_string) const
@@ -52,8 +47,22 @@ void ActionStringProcessor::ExecuteFileExtension(std::string script_name, std::s
     }
 }
 
+std::string ActionStringProcessor::GetParameter(std::string action_string) const {
+    std::ifstream file(action_string);
+    if (file.good()) {
+	// read the contents of the file into a string
+	std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	file.close();
+
+	// run the script with 'arg' as the argument
+	return contents;
+    } else {
+	return GetPureName(action_string);
+    }
+}
+
 void ActionStringProcessor::ExecuteActionExtension(std::string script_name, std::string action_string) const {
-    std::string command = "./" + script_name + " " + "\"" + GetPureName(action_string) + "\"";
+    std::string command = "./" + script_name + " " + "\"" + GetParameter(action_string) + "\"";
     std::cout << command << std::endl;
 
     int result = WEXITSTATUS(std::system(command.c_str()));
@@ -63,7 +72,7 @@ void ActionStringProcessor::ExecuteActionExtension(std::string script_name, std:
 }
 
 bool ActionStringProcessor::IsValidColour(const QString& color) const {
-    QRegularExpression colorRegex("#[0-9a-fA-F]{6}");
+    QRegularExpression colorRegex("#[0-9A-F]{6}");
     return colorRegex.match(color).hasMatch();
 }
 
@@ -73,6 +82,7 @@ void ActionStringProcessor::AssignColour(const std::string& extension_name, QStr
 	    file_read.close();
 
 	    if (!IsValidColour(colour)) {
+		std::cerr << "Invalid colour: " << colour.toStdString() << std::endl;
 		std::ofstream file_write(extension_name + '.' + program_extensions_[Extension::COLOUR], std::ios::trunc);
 		colour_location = GenerateRandomColour_();
 		file_write << colour_location.toStdString() << std::endl;
@@ -91,7 +101,7 @@ void ActionStringProcessor::PreloadExtensions() const {
 	if (GetPureExtension(script_action_string) == program_extensions_[Extension::EXTENSION_SCRIPT]) {
 	    std::string extension_name = GetPureName(script_action_string);
 	    struct PreloadedExtension preloaded;
-	    preloaded.run_function  = [this, script_action_string](std::string action_string) {this->ExecuteActionExtension(script_action_string, action_string); };
+	    preloaded.run_function  = [this, script_action_string](std::string action_string) { this->ExecuteActionExtension(script_action_string, action_string); };
 	    AssignColour(extension_name, preloaded.colour);
 
 	    extension_preloads_[extension_name] = preloaded;
@@ -105,7 +115,7 @@ void ActionStringProcessor::PreloadExtensions() const {
 	    std::string extension_name = GetPureName(file_extension);
 
 	    struct PreloadedExtension preloaded;
-	    preloaded.run_function  = [this, script_action_string](std::string action_string) {this->ExecuteFileExtension(script_action_string, action_string); };
+	    preloaded.run_function  = [this, script_action_string](std::string action_string) { this->ExecuteFileExtension(script_action_string, action_string); };
 
 	    AssignColour(extension_name, preloaded.colour);
 

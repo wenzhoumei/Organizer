@@ -53,9 +53,10 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
-		action_string_processor.cpp 
+		action_string_processor.cpp moc_search_column.cpp
 OBJECTS       = main.o \
-		action_string_processor.o
+		action_string_processor.o \
+		moc_search_column.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
 		/usr/lib/qt/mkspecs/common/linux.conf \
@@ -272,7 +273,14 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/features/exceptions.prf \
 		/usr/lib/qt/mkspecs/features/yacc.prf \
 		/usr/lib/qt/mkspecs/features/lex.prf \
-		myproject.pro  main.cpp \
+		myproject.pro search_column.hpp \
+		column.hpp \
+		selection_column.hpp \
+		search_column.hpp \
+		title_column.hpp \
+		action_string_processor.hpp \
+		menu_window.hpp \
+		space.hpp main.cpp \
 		action_string_processor.cpp
 QMAKE_TARGET  = myproject
 DESTDIR       = 
@@ -735,6 +743,7 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents search_column.hpp column.hpp selection_column.hpp search_column.hpp title_column.hpp action_string_processor.hpp menu_window.hpp space.hpp $(DISTDIR)/
 	$(COPY_FILE) --parents main.cpp action_string_processor.cpp $(DISTDIR)/
 
 
@@ -767,8 +776,23 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/qt/mkspecs/features/data/dummy.cpp
 	g++ -pipe -std=c++20 -O2 -flto -fno-fat-lto-objects -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib/qt/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all:
+compiler_moc_header_make_all: moc_search_column.cpp moc_search_column.cpp
 compiler_moc_header_clean:
+	-$(DEL_FILE) moc_search_column.cpp moc_search_column.cpp
+moc_search_column.cpp: search_column.hpp \
+		column.hpp \
+		action_string_processor.hpp \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/wenzhou/Organizer/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/wenzhou/Organizer -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/12.2.0 -I/usr/include/c++/12.2.0/x86_64-pc-linux-gnu -I/usr/include/c++/12.2.0/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/12.2.0/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/12.2.0/include-fixed -I/usr/include search_column.hpp -o moc_search_column.cpp
+
+moc_search_column.cpp: search_column.hpp \
+		column.hpp \
+		action_string_processor.hpp \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/wenzhou/Organizer/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/wenzhou/Organizer -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/12.2.0 -I/usr/include/c++/12.2.0/x86_64-pc-linux-gnu -I/usr/include/c++/12.2.0/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/12.2.0/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/12.2.0/include-fixed -I/usr/include search_column.hpp -o moc_search_column.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
@@ -781,15 +805,24 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean 
+compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
-main.o: main.cpp action_string_processor.hpp
+main.o: main.cpp menu_window.hpp \
+		title_column.hpp \
+		column.hpp \
+		action_string_processor.hpp \
+		search_column.hpp \
+		selection_column.hpp \
+		space.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 action_string_processor.o: action_string_processor.cpp action_string_processor.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o action_string_processor.o action_string_processor.cpp
+
+moc_search_column.o: moc_search_column.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_search_column.o moc_search_column.cpp
 
 ####### Install
 
