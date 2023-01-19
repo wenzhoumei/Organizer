@@ -21,14 +21,59 @@
 
 #include <QRegularExpression>
 
-struct PreloadedExtension {
-    QString colour;
-    std::function<void(std::string)> run_function;
-};
 
 enum Extension { EXTENSION_SCRIPT, COLOUR, DEFAULT, SPACE };
 enum ExitCode { OK = 0 };
 
+class ProcessedString {
+private:
+    std::string extension;
+    std::string parameter;
+
+    std::string display_string;
+    bool global;
+
+public:
+    void Execute() {
+    }
+};
+
+class Program {
+private:
+    struct PreloadedExtension {
+	QString colour;
+	std::function<void(std::string)> run_function;
+    };
+
+    std::unordered_map<std::string, PreloadedExtension> extension_preloads_;
+
+    std::string directory_path_;
+
+    std::string action_extension_dir_name_;
+    std::string filename_extension_dir_name_;
+    std::string colours_extension_dir_name_;
+    std::string globals_extension_dir_name_;
+
+    std::string here_file_name_;
+    std::string whitelist_file_name_;
+
+private:
+    QString GenerateRandomColour_() const;
+
+private:
+    void ExecuteFileExtension(std::string script_name, std::string action_string) const;
+    void ExecuteActionExtension(std::string script_name, std::string action_string) const;
+
+public:
+    Program(std::string directory_path, std::string action_extension_dir_name, std::string filename_extension_dir_name): directory_path_(directory_path) {
+    }
+
+public:
+    void PreloadExtensions() const; // Find all defined extensions and preload them into a map
+    ProcessedString ProcessString(const std::string& action_string) const;
+};
+
+/*
 class ActionStringProcessor {
 private:
     inline static std::unordered_map<enum Extension, std::string> program_extensions_ = { { Extension::EXTENSION_SCRIPT, "ext" }, { Extension::COLOUR, "colour" }, { Extension::DEFAULT, "" }, { Extension::SPACE, "space" } };
@@ -37,6 +82,14 @@ private:
     inline static std::unordered_map<std::string, PreloadedExtension> extension_preloads_;
 
     std::string directory_path_;
+
+    std::string action_extension_dir_name_;
+    std::string filename_extension_dir_name_;
+    std::string colours_extension_dir_name_;
+    std::string globals_extension_dir_name_;
+
+    std::string here_file_name_;
+    std::string whitelist_file_name_;
 
     QString GenerateRandomColour_() const {
 	std::random_device rd;
@@ -55,7 +108,7 @@ private:
 
     bool IsValidColour(const QString& color) const;
 public:
-    ActionStringProcessor(std::string directory_path): directory_path_(directory_path) {
+    ActionStringProcessor(std::string directory_path, std::string action_extension_dir_name, std::string filename_extension_dir_name): directory_path_(directory_path) {
     }
 
     QString GetColour(const std::string& action_string) const
@@ -68,6 +121,7 @@ public:
 	return extension_preloads_[GetExtension(action_string)].run_function;
     }
 
+    ProcessedString ProcessString(const std::string& action_string) const;
     std::string GetName(const std::string& action_string) const;
     std::string GetExtension(const std::string& action_string) const;
     std::string GetPureName(const std::string& action_string) const;
@@ -96,6 +150,9 @@ public:
     void PreloadExtensions() const; // Find all defined extensions and preload them into a map
     void ExecuteFileExtension(std::string script_name, std::string action_string) const;
     void ExecuteActionExtension(std::string script_name, std::string action_string) const;
+
+    void PreloadExtensions2() const; // Find all defined extensions and preload them into a map
 };
+*/
 
 #endif

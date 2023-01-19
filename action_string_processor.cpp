@@ -1,4 +1,57 @@
 #include "action_string_processor.hpp"
+#include <boost/algorithm/string.hpp>
+
+ProcessedString ActionStringProcessor::ProcessString(const std::string& action_string) const
+{
+    ProcessedString ret;
+    std::string buf;
+
+    ret.display_string = action_string;
+    int i = action_string.size() - 1;
+    for (; i >= 0; i--) {
+	char c = action_string[i];
+
+	if (c == '.') {
+	    // Local entry
+	    if (extension_preloads_.contains(buf)) {
+		ret.global = false;
+		ret.extension = buf;
+		buf = "";
+		break;;
+	    }
+	} else if (c == '|') {
+	    // Global entry
+	    if (extension_preloads_.contains(buf)) {
+		ret.global = true;
+		ret.extension = buf;
+		buf = "";
+		break;
+	    }
+	} else if (c == ',') {
+	    // Data
+	    ret.parameter = buf;
+	    ret.display_string = action_string.substr(0, i);
+	    buf = "";
+	    continue;
+	}
+	buf = c + buf;
+    }
+
+    std::cout << "i: " << i << std::endl;
+
+    if (ret.extension == "") {
+	ret.extension = "";
+	ret.parameter = action_string;
+    } else if (ret.parameter == "") {
+	    ret.parameter = action_string.substr(0, i);
+    }
+
+    std::cout << "string: " << action_string << std::endl;
+    std::cout << "extension: " << ret.extension << std::endl;
+    std::cout << "parameter: " << ret.parameter << std::endl;
+    std::cout << "display_string: " << ret.display_string << std::endl;
+    return ret;
+}
 
 std::string ActionStringProcessor::GetPureExtension(const std::string& action_string) const
 {
@@ -37,6 +90,7 @@ std::string ActionStringProcessor::GetName(const std::string& action_string) con
 	return extension_preloads_.contains(extension) ? name: action_string;
     }
 }
+
 void ActionStringProcessor::ExecuteFileExtension(std::string script_name, std::string action_string) const {
     std::string command = "./" + script_name + " " + "\"" + action_string + "\"";
     std::cout << command << std::endl;
@@ -106,6 +160,34 @@ void ActionStringProcessor::PreloadExtensions() const {
 
 	    extension_preloads_[extension_name] = preloaded;
 	}
+    }
+
+    for (auto const& [key, val] : extension_preloads_) {
+	std::string script_action_string = key + "." + program_extensions_[Extension::EXTENSION_SCRIPT];
+
+	for (const std::string& file_extension : LoadSpace(script_action_string)) {
+	    std::string extension_name = GetPureName(file_extension);
+
+	    struct PreloadedExtension preloaded;
+	    preloaded.run_function  = [this, script_action_string](std::string action_string) { this->ExecuteFileExtension(script_action_string, action_string); };
+
+	    AssignColour(extension_name, preloaded.colour);
+
+	    extension_preloads_[extension_name] = preloaded;
+	}
+    }
+}
+
+void ActionStringProcessor::PreloadExtensions2() const {
+    for (const auto& entry : std::filesystem::directory_iterator(extension_scripts_directory_path_)) {
+	std::string extension_name = entry.path().filename();
+
+	// Load extension scripts - {extension}.ext - and save them as functions in map
+	struct PreloadedExtension preloaded;
+	preloaded.run_function  = [this, extension_name](std::string action_string) { this->ExecuteActionExtension(script_action_string, action_string); };
+	AssignColour(extension_name, preloaded.colour);
+
+	extension_preloads_[extension_name] = preloaded;
     }
 
     for (auto const& [key, val] : extension_preloads_) {
