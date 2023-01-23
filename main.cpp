@@ -1,9 +1,8 @@
 #include <QApplication>
-#include "menu_window.hpp"
+#include "program.hpp"
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
-    MenuWindow window(8, 33, 300);
-    return app.exec();
+    Program program("/home/wenzhou/Organizer/files", "program", "default");
+    //return program.Run(argc, argv);
 }
