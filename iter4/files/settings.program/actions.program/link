@@ -1,0 +1,8 @@
+#!/bin/bash
+
+link=$1
+if [[ ! $link =~ ^(https?|ftp|file):// ]]; then
+  link="https://$link"
+fi
+
+browser $link
